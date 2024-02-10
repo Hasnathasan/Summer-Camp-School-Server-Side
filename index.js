@@ -14,13 +14,13 @@ app.use(cors());
 app.use(express.json());
 const verifyJWT = (req, res, next) => {
   const authorization = req.headers.authorization;
-  if(!authorization){
-    return res.status(401).send({error: true, message: "unthorized 1 user"})
+  if (!authorization) {
+    return res.status(401).send({ error: true, message: "unthorized 1 user" })
   }
   const token = authorization.split(' ')[1];
   jwt.verify(token, process.env.JWT_ACCESS_TOKEN, (err, decoded) => {
-    if(err){
-      return res.status(401).send({error: true, message: "unthorized 2 user"})
+    if (err) {
+      return res.status(401).send({ error: true, message: "unthorized 2 user" })
     }
     req.decoded = decoded;
     next()
@@ -30,7 +30,7 @@ const verifyJWT = (req, res, next) => {
 // Routes
 // Define your routes here
 app.get('/', (req, res) => {
-    res.send("Summer Camp in running on Load Sheading hire")
+  res.send("Summer Camp in running on Load Sheading hire")
 })
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lmw0s1b.mongodb.net/?retryWrites=true&w=majority`;
@@ -65,7 +65,7 @@ async function run() {
     app.post('/jwt', (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.JWT_ACCESS_TOKEN, { expiresIn: '10h' });
-      res.send({token})
+      res.send({ token })
     })
 
 
@@ -76,60 +76,60 @@ async function run() {
     app.get('/products', async (req, res) => {
       const result = await productCollection.find().toArray();
       res.send(result);
-  });
+    });
 
-  app.get('/productsBySubCate', async (req, res) => {
-    const subCate = req.query.subCategory;
-    const sortedText = req.query?.sort;
-    console.log(sortedText);
-    let sort = null;
-    if (sortedText === "priceHighToLow") sort = { "price.discounted_price": -1 };
-    if (sortedText === "priceLowToHigh") sort = { "price.discounted_price": 1 };
-    if (sortedText === "ratingHighToLow") sort = { "rating": -1 };
-    if (sortedText === "ratingLowToHigh") sort = { "rating": 1 };
-  
-    console.log(sort);
-    console.log(subCate);
-    const filter = { "secondary_category" : subCate};
-    const result = await productCollection.find(filter).sort(sort).toArray();
-    res.send(result)
-  })
+    app.get('/productsBySubCate', async (req, res) => {
+      const subCate = req.query.subCategory;
+      const sortedText = req.query?.sort;
+      console.log(sortedText);
+      let sort = null;
+      if (sortedText === "priceHighToLow") sort = { "price.discounted_price": -1 };
+      if (sortedText === "priceLowToHigh") sort = { "price.discounted_price": 1 };
+      if (sortedText === "ratingHighToLow") sort = { "rating": -1 };
+      if (sortedText === "ratingLowToHigh") sort = { "rating": 1 };
 
-  app.get('/products/:id', async (req, res) => {
+      console.log(sort);
+      console.log(subCate);
+      const filter = { "secondary_category": subCate };
+      const result = await productCollection.find(filter).sort(sort).toArray();
+      res.send(result)
+    })
+
+    app.get('/products/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productCollection.findOne(query);
       res.send(result);
-  });
+    });
 
-    app.post('/faLog', async(req, res) => {
+    app.post('/faLog', async (req, res) => {
       const user = req.body;
       const result = await fbUserCollection.insertOne(user);
       res.send(result)
     })
 
-    app.get('/faLog', async(req, res) => {
+    app.get('/faLog', async (req, res) => {
       const result = await fbUserCollection.find().toArray();
       res.send(result)
     })
 
-    app.get('/cart', async(req, res) => {
+    app.get('/cart', async (req, res) => {
       const result = await cartCollection.find().toArray();
       res.send(result)
     })
 
-    app.delete('/cart/:id', async(req, res) => {
+    app.delete('/cart/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(filter);
       res.send(result)
     })
-    app.patch('/updateCartProduct/:id', async(req, res) => {
+    app.patch('/updateCartProduct/:id', async (req, res) => {
       const id = req.params.id;
       const quantity = req.query.quantity;
       const isSelected = req.query.isSelected;
       const updateDoc = {
-        $set:{
+        $set: {
           quantity: parseInt(quantity),
           isSelected: isSelected == "true" ? true : false,
         }
@@ -139,20 +139,20 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/cart', async(req, res) => {
+    app.post('/cart', async (req, res) => {
       const product = req.body;
       const result = await cartCollection.insertOne(product);
       res.send(result)
     })
 
-// Api for Rokomari.com Ends
+    // Api for Rokomari.com Ends
 
 
 
 
 
 
-    app.get('/users', verifyJWT, async(req, res) => {
+    app.get('/users', verifyJWT, async (req, res) => {
       const email = req.query.email;
       // if(email !== req.decoded.email){
       //   return res.send({error: true, message: "unathorized user"})
@@ -160,29 +160,29 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result)
     })
-    app.post("/users", async(req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
-      const query = {email: user.email}
+      const query = { email: user.email }
       const existist = await usersCollection.findOne(query);
-      if(existist){
-        return res.send({error: true, message: "User already added in Collection"})
+      if (existist) {
+        return res.send({ error: true, message: "User already added in Collection" })
       }
       const result = await usersCollection.insertOne(user);
       res.send(result)
     })
 
-    app.get('/userrole', async(req, res) => {
+    app.get('/userrole', async (req, res) => {
       const email = req.query.email;
-      const query = { email: email};
+      const query = { email: email };
       const user = await usersCollection.findOne(query);
-      res.send({role: user?.role})
+      res.send({ role: user?.role })
     })
 
 
-    app.patch('/userrole/:email', verifyJWT, async(req, res) => {
+    app.patch('/userrole/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
-      const {role} = req.body;
-      const filter = {email: email};
+      const { role } = req.body;
+      const filter = { email: email };
       console.log(email, role);
       const updateDoc = {
         $set: {
@@ -193,49 +193,49 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/classes', async(req, res) => {
+    app.get('/classes', async (req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result)
     })
 
-    app.get('/selectedClasses/:id', async(req, res) => {
+    app.get('/selectedClasses/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await selectedClassesCollection.findOne(query);
       res.send(result)
     })
-    app.get('/classes/:id', async(req, res) => {
+    app.get('/classes/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await classCollection.findOne(query);
       res.send(result)
     })
 
-    app.get('/approvedclasses', async(req, res) => {
+    app.get('/approvedclasses', async (req, res) => {
       // console.log(req.headers.authorization);
-      const filter = {status: "approved"}
+      const filter = { status: "approved" }
       const result = await classCollection.find(filter).toArray();
       res.send(result)
     })
 
-  
 
-    app.get('/instructorClasses', verifyJWT, async(req, res) => {
+
+    app.get('/instructorClasses', verifyJWT, async (req, res) => {
       const email = req.query.email;
-      const query = {instructor_email: email};
+      const query = { instructor_email: email };
       const result = await classCollection.find(query).toArray();
       res.send(result)
     })
 
-    app.post('/classes', verifyJWT, async(req, res) => {
+    app.post('/classes', verifyJWT, async (req, res) => {
       const newClass = req.body;
       const result = await classCollection.insertOne(newClass);
       res.send(result)
     })
 
-    app.patch("/classes/setapprove/:id", verifyJWT, async(req, res) => {
+    app.patch("/classes/setapprove/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)}
+      const filter = { _id: new ObjectId(id) }
       console.log(id);
       const updateDoc = {
         $set: {
@@ -247,9 +247,9 @@ async function run() {
     })
 
 
-    app.patch("/classes/setdeny/:id", verifyJWT, async(req, res) => {
+    app.patch("/classes/setdeny/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)}
+      const filter = { _id: new ObjectId(id) }
       console.log(id);
       const updateDoc = {
         $set: {
@@ -260,9 +260,9 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/classes/feedback/:id', verifyJWT, async(req, res) => {
+    app.patch('/classes/feedback/:id', verifyJWT, async (req, res) => {
       const id = req.params.id;
-      const {feedback} = req.body;
+      const { feedback } = req.body;
       console.log(feedback);
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -275,50 +275,50 @@ async function run() {
     })
 
 
-    app.get('/popularclasses', async(req, res) => {
-      const sort = {total_students: -1}
+    app.get('/popularclasses', async (req, res) => {
+      const sort = { total_students: -1 }
       const result = await classCollection.find().sort(sort).limit(6).toArray();
       res.send(result)
     })
 
-    app.get('/selectedclasses', verifyJWT, async(req, res) => {
+    app.get('/selectedclasses', verifyJWT, async (req, res) => {
       const email = req.query.email;
-      const query = {addedBy: email};
+      const query = { addedBy: email };
       const result = await selectedClassesCollection.find(query).toArray();
       res.send(result)
     })
-    app.get('/enrolledclasses/:email', verifyJWT, async(req, res) => {
+    app.get('/enrolledclasses/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       console.log(email);
-      const query = {enrolledBy: email};
+      const query = { enrolledBy: email };
       const result = await enrolledClassesCollection.find(query).toArray();
       res.send(result)
     })
-    app.post('/enrolledclasses', verifyJWT, async(req, res) => {
+    app.post('/enrolledclasses', verifyJWT, async (req, res) => {
       const classToEnroll = req.body;
       console.log(classToEnroll);
       const result = await enrolledClassesCollection.insertOne(classToEnroll);
       res.send(result)
     })
 
-    app.post('/selectedclasses', verifyJWT, async(req, res) => {
+    app.post('/selectedclasses', verifyJWT, async (req, res) => {
       const selectedClass = req.body;
       console.log(selectedClass);
       const result = await selectedClassesCollection.insertOne(selectedClass);
       res.send(result)
     })
 
-    app.delete("/selectedclasses", verifyJWT, async(req, res) => {
+    app.delete("/selectedclasses", verifyJWT, async (req, res) => {
       const id = req.query.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await selectedClassesCollection.deleteOne(query);
       res.send(result)
     })
 
     // Payment Related Api
 
-    app.post('/create-payment-intent', verifyJWT, async(req, res) => {
-      const {classPrice} = req.body;
+    app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+      const { classPrice } = req.body;
       const amount = classPrice * 100;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -332,26 +332,26 @@ async function run() {
     })
 
 
-    app.post('/payments', async(req, res) => {
+    app.post('/payments', async (req, res) => {
       const payment = req.body;
       const result = await paymentCollection.insertOne(payment);
       const id = req.body.classid;
       console.log(req.body);
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const deleteResult = await selectedClassesCollection.deleteOne(query);
-      res.send({result, deleteResult});
+      res.send({ result, deleteResult });
     })
 
-    app.get('/payments/:email', async(req, res) => {
+    app.get('/payments/:email', async (req, res) => {
       const email = req.params.id;
-      const query = {email: email};
+      const query = { email: email };
       const result = await paymentCollection.find(query).toArray();
       res.send(result)
     })
 
-    app.patch('/classes/update/:id', verifyJWT, async(req, res) => {
+    app.patch('/classes/update/:id', verifyJWT, async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const classToUpdate = await classCollection.findOne(filter);
       const updateDoc = {
         $set: {
@@ -359,19 +359,19 @@ async function run() {
           total_students: classToUpdate.total_students + 1
         }
       }
-     
+
       const result = await classCollection.updateOne(filter, updateDoc);
-      
+
       res.send(result)
     })
 
 
-    app.get('/instructors', async(req, res) => {
+    app.get('/instructors', async (req, res) => {
       const result = await instructorCollection.find().toArray();
       res.send(result)
     })
-    
-    app.get('/popularinstructors', async(req, res) => {
+
+    app.get('/popularinstructors', async (req, res) => {
       const result = await instructorCollection.find().limit(6).toArray();
       res.send(result)
     })
@@ -393,7 +393,7 @@ run().catch(console.dir);
 
 
 // Start the server
- // Specify the desired port number
+// Specify the desired port number
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
